@@ -1,64 +1,22 @@
-const statusDisplay = document.getElementById('status');
+const BACKEND_URL = 'http://localhost:8080';
 
-const quill = new Quill('#editor', {
-	theme: 'snow'
-});
+const documentsList = document.getElementById('documents');
 
-let websocket;
+const getDocuments = async () => {
+	const response = await fetch(`${BACKEND_URL}/api/v1/documents`);
 
-function connectWebSocket() {
-	websocket = new WebSocket('ws://localhost:8080/document-edit');
+	const data = await response.json();
 
-	websocket.onopen = function (event) {
-		// TODO: Retrieve document content from server
-		updateStatus('Connected to WebSocket Server!');
-	};
+	console.log(data);
 
-	websocket.onmessage = function (event) {
-		try {
-			const delta = JSON.parse(event.data);
-			if (delta) {
-				quill.updateContents(delta);
-			}
-		} catch (error) {
-			console.error('Error parsing delta:', error);
-		}
-	};
+	data.forEach((doc) => {
+		const documentItem = document.createElement('li');
+		const documentLink = document.createElement('a');
+		documentLink.href = `document-editor.html?docId=${doc.id}`;
+		documentLink.innerHTML = doc.title;
+		documentItem.appendChild(documentLink);
+		documentsList.appendChild(documentItem);
+	});
+};
 
-	websocket.onerror = function (event) {
-		updateStatus('WebSocket Error: ' + event.type);
-	};
-
-	websocket.onclose = function (event) {
-		updateStatus('Disconnected from WebSocket Server');
-		setTimeout(connectWebSocket, 2000);
-	};
-}
-
-function sendMessage() {
-	if (!websocket && websocket.readyState !== WebSocket.OPEN) {
-		console.error('Cannot send message. WebSocket is not open.');
-		return;
-	}
-
-	const messageText = textarea.value;
-	websocket.send(messageText);
-	console.log('Sent: ' + messageText);
-}
-
-function updateStatus(message) {
-	statusDisplay.textContent = message;
-}
-
-quill.on('text-change', (delta, oldDelta, source) => {
-	if (source !== 'user') return;
-
-	try {
-		const message = JSON.stringify(delta);
-		websocket.send(message);
-	} catch (error) {
-		console.error('Error sending delta:', error);
-	}
-});
-
-connectWebSocket();
+getDocuments();
