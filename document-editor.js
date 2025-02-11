@@ -26,6 +26,7 @@ async function fetchDocument(documentId) {
 		const documentData = await response.json();
 
 		// Update the page with the fetched document
+		document.title = documentData.title;
 		titleElement.textContent = documentData.title;
 		quill.root.innerHTML = documentData.content; // Set Quill editor content
 		connectWebSocket();
