@@ -14,6 +14,7 @@ const getDocuments = async () => {
 		const documentLink = document.createElement('a');
 		documentLink.href = `document-editor.html?docId=${doc.id}`;
 		documentLink.innerHTML = doc.title;
+		documentLink.target = '_blank';
 		documentItem.appendChild(documentLink);
 		documentsList.appendChild(documentItem);
 	});
